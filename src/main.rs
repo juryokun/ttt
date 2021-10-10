@@ -7,22 +7,23 @@ use std::sync::Mutex;
 extern crate dirs;
 
 static CONFIG_DATA: Lazy<Mutex<Config>> = Lazy::new(|| {
-    let mut file_name = get_settings_dir();
-    file_name.push("settings.json");
+    let file_name = get_settings_file();
+    // file_name.push("settings.json");
     let reader = BufReader::new(File::open(file_name).unwrap());
     let config: Config = serde_json::from_reader(reader).unwrap();
     Mutex::new(config)
 });
 
 #[cfg(not(test))]
-fn get_settings_dir() -> PathBuf {
+fn get_settings_file() -> PathBuf {
     let mut config_dir = dirs::config_dir().unwrap();
     config_dir.push("ttt");
+    config_dir.push("settigns.json");
     config_dir
 }
 #[cfg(test)]
-fn get_settings_dir() -> PathBuf {
-    PathBuf::from("rsc/")
+fn get_settings_file() -> PathBuf {
+    PathBuf::from("rsc/settings_for_test.json")
 }
 
 fn main() {
@@ -63,6 +64,6 @@ struct Config {
 #[test]
 fn test_load_settings() {
     let config = CONFIG_DATA.lock().unwrap();
-    println!("{}", config.api_key);
-    println!("{}", config.database_id);
+    assert_eq!(config.database_id, "test_database_id");
+    assert_eq!(config.api_key, "test_api_key");
 }
